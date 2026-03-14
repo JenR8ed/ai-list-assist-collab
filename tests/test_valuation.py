@@ -2,7 +2,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.schemas.listing import ValuationRequest, ValuationResult
+from app.schemas.listing import ValuationRequest
 
 
 @pytest.mark.asyncio
