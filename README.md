@@ -34,8 +34,23 @@
 ```bash
 git clone git@github.com:JenR8ed/ai-list-assist-collab.git
 cd ai-list-assist-collab
+```
+
+#### Secrets Configuration (Google Cloud Secret Manager)
+For secure configuration, store your sensitive environment variables (`GOOGLE_API_KEY`, `EBAY_APP_ID`, `TELEGRAM_BOT_TOKEN`) in **Google Cloud Secret Manager**. 
+
+If you have your `.env` contents stored as a Secret Manager secret (e.g., `ai-list-assist-env`), you can pull it locally:
+
+> **Note:** To pull secrets, you must have the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) installed and authenticated (`gcloud auth login`).
+
+```bash
+gcloud secrets versions access latest --secret="ai-list-assist-env" > .env
+```
+
+Alternatively, manually create the `.env` file for local development:
+```bash
 cp .env.example .env
-# Fill in GOOGLE_API_KEY, EBAY_APP_ID, TELEGRAM_BOT_TOKEN
+# Fill in the sensitive variables
 ```
 
 ### 2. Run with Docker Compose
