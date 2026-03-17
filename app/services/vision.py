@@ -51,7 +51,7 @@ async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> Image
     img.save(buf, format="JPEG")
     image_data = {"mime_type": "image/jpeg", "data": buf.getvalue()}
 
-    response = model.generate_content(
+    response = await model.generate_content_async(
         [full_prompt, image_data],
         safety_settings={
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
