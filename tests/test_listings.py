@@ -1,6 +1,5 @@
 """Tests for listing draft creation."""
 import pytest
-from unittest.mock import AsyncMock, patch
 
 from app.schemas.listing import ImageAnalysisResult, ListingDraft
 
