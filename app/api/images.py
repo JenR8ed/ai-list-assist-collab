@@ -4,7 +4,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image
 from loguru import logger
 
-from app.schemas.listing import ImageAnalysisRequest, ImageAnalysisResult
+from app.schemas.listing import ImageAnalysisResult
 from app.services.vision import analyze_image
 
 router = APIRouter()

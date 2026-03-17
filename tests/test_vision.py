@@ -1,7 +1,6 @@
 """Tests for vision service — mocked AI responses."""
 import pytest
-import io
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from PIL import Image
 
 from app.schemas.listing import ImageAnalysisResult
@@ -29,7 +28,8 @@ async def test_analyze_image_returns_result():
     img = make_test_image()
     with patch("app.services.vision._analyze_with_gemini", new=AsyncMock(return_value=MOCK_RESULT)):
         from app.services.vision import analyze_image
-        result = await analyze_image(img)
+        with patch("app.services.vision.settings.google_api_key", "test_key"):
+                result = await analyze_image(img)
     assert result.title == MOCK_RESULT.title
     assert result.price_estimate_low > 0
     assert 0 <= result.confidence <= 1.0
@@ -42,5 +42,6 @@ async def test_fallback_to_ollama_on_gemini_failure():
     with patch("app.services.vision._analyze_with_gemini", new=AsyncMock(side_effect=Exception("API error"))):
         with patch("app.services.vision._analyze_with_ollama", new=AsyncMock(return_value=ollama_result)):
             from app.services.vision import analyze_image
-            result = await analyze_image(img)
+            with patch("app.services.vision.settings.google_api_key", "test_key"):
+                result = await analyze_image(img)
     assert result.model_used == "llava:7b"

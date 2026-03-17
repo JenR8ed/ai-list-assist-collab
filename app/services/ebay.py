@@ -1,6 +1,5 @@
 """eBay API service — listing drafts and price valuation via sold comps."""
 import statistics
-from typing import Optional
 
 from loguru import logger
 
