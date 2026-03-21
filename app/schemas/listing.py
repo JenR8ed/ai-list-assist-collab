@@ -3,13 +3,6 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
-class ImageAnalysisRequest(BaseModel):
-    prompt: Optional[str] = Field(
-        default=None,
-        description="Optional extra context about the item (e.g. brand, condition)",
-    )
-
-
 class ImageAnalysisResult(BaseModel):
     title: str = Field(description="Suggested eBay listing title (80 chars max)")
     description: str = Field(description="Full HTML-ready item description")
