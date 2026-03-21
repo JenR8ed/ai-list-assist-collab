@@ -17,4 +17,4 @@ async def estimate_price(request: ValuationRequest):
         return result
     except Exception as e:
         logger.error(f"Valuation failed: {e}")
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="Valuation service failed. Please try again later.")
