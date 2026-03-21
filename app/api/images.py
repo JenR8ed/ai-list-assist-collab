@@ -4,8 +4,27 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image
 from loguru import logger
 
+import re
+import urllib.parse
+
 from app.schemas.listing import ImageAnalysisResult
 from app.services.vision import analyze_image
+
+
+
+def sanitize_filename(filename: str) -> str:
+    """Sanitize the filename to prevent log injection."""
+    if not filename:
+        return "unnamed_file"
+    # Remove control characters
+    # Remove control characters and newlines
+    sanitized = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', filename)
+    sanitized = urllib.parse.unquote(sanitized)
+    sanitized = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', sanitized)
+    # Limit length to 255 characters
+    return sanitized[:255]
+
+
 
 router = APIRouter()
 
@@ -29,9 +48,10 @@ async def analyze_listing_image(
     try:
         img = Image.open(io.BytesIO(contents)).convert("RGB")
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Could not decode image: {e}")
+        logger.error(f"Could not decode image: {e}")
+        raise HTTPException(status_code=422, detail="Could not decode image")
 
-    logger.info(f"Analyzing image: {file.filename} ({file.content_type}, {len(contents)//1024}KB)")
+    logger.info(f"Analyzing image: {sanitize_filename(file.filename)} ({file.content_type}, {len(contents)//1024}KB)")
 
     result = await analyze_image(img, prompt=prompt or None)
     return result
