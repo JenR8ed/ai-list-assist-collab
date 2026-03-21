@@ -9,6 +9,7 @@ from typing import Optional
 
 from PIL import Image
 from loguru import logger
+import httpx
 
 from app.core.config import settings
 from app.schemas.listing import ImageAnalysisResult
@@ -29,6 +30,14 @@ matching this schema exactly — no markdown, no explanation:
 }
 """
 
+
+_ollama_client = None
+
+def _get_ollama_client():
+    global _ollama_client
+    if _ollama_client is None:
+        _ollama_client = httpx.AsyncClient(timeout=120)
+    return _ollama_client
 
 def _pil_to_base64(img: Image.Image, fmt: str = "JPEG") -> str:
     buf = io.BytesIO()
@@ -65,25 +74,23 @@ async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> Image
 
 
 async def _analyze_with_ollama(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
-    import httpx
-
     b64 = _pil_to_base64(img)
     full_prompt = LISTING_PROMPT
     if prompt:
         full_prompt += f"\nExtra context from seller: {prompt}"
 
-    async with httpx.AsyncClient(timeout=120) as client:
-        resp = await client.post(
-            f"{settings.ollama_base_url}/api/generate",
-            json={
-                "model": settings.ollama_model,
-                "prompt": full_prompt,
-                "images": [b64],
-                "stream": False,
-            },
-        )
-        resp.raise_for_status()
-        raw = resp.json()["response"].strip().lstrip("```json").rstrip("```").strip()
+    client = _get_ollama_client()
+    resp = await client.post(
+        f"{settings.ollama_base_url}/api/generate",
+        json={
+            "model": settings.ollama_model,
+            "prompt": full_prompt,
+            "images": [b64],
+            "stream": False,
+        },
+    )
+    resp.raise_for_status()
+    raw = resp.json()["response"].strip().lstrip("```json").rstrip("```").strip()
 
     data = json.loads(raw)
     data["model_used"] = settings.ollama_model
