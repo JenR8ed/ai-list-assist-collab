@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     ollama_model: str = "llava:7b"
 
     # App
-    secret_key: str = "changeme"
+    secret_key: str
     debug: bool = True
     log_level: str = "info"
     allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
