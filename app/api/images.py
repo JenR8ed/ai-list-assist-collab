@@ -29,7 +29,8 @@ async def analyze_listing_image(
     try:
         img = Image.open(io.BytesIO(contents)).convert("RGB")
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Could not decode image: {e}")
+        logger.error(f"Image decoding failed: {e}")
+        raise HTTPException(status_code=422, detail="Could not decode image. Please ensure you are uploading a valid image file.")
 
     logger.info(f"Analyzing image: {file.filename} ({file.content_type}, {len(contents)//1024}KB)")
 

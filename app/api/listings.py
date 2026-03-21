@@ -17,4 +17,4 @@ async def create_listing_draft(analysis: ImageAnalysisResult):
         return draft
     except Exception as e:
         logger.error(f"eBay draft creation failed: {e}")
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="Failed to create eBay draft. Please try again later.")
