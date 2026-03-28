@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 # Mock loguru to allow importing the service without the dependency
 sys.modules["loguru"] = MagicMock()
 
-from app.services.telegram import escape_markdown
+from app.services.telegram import escape_markdown  # noqa: E402
 
 def test_escape_markdown_basic():
     """Verify basic character escaping."""
