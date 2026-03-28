@@ -5,7 +5,8 @@ Fallback: Ollama LLaVA (local, offline)
 import json
 import base64
 import io
-from typing import Optional
+from typing import Optional, Any
+from functools import lru_cache
 
 from PIL import Image
 from loguru import logger
@@ -36,12 +37,19 @@ def _pil_to_base64(img: Image.Image, fmt: str = "JPEG") -> str:
     return base64.b64encode(buf.getvalue()).decode()
 
 
-async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
+@lru_cache(maxsize=1)
+def _get_gemini_model() -> Any:
+    """Initialize and return the Gemini 1.5 Flash model singleton."""
     import google.generativeai as genai
-    from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
     genai.configure(api_key=settings.google_api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-1.5-flash")
+
+
+async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
+    from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
+    model = _get_gemini_model()
 
     full_prompt = LISTING_PROMPT
     if prompt:
