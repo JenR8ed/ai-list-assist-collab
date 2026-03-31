@@ -1,7 +1,7 @@
 """Image upload and multimodal AI analysis endpoints."""
 import io
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from loguru import logger
 
 from app.schemas.listing import ImageAnalysisResult
@@ -28,7 +28,7 @@ async def analyze_listing_image(
 
     try:
         img = Image.open(io.BytesIO(contents)).convert("RGB")
-    except Exception as e:
+    except (UnidentifiedImageError, OSError) as e:
         logger.error(f"Image decoding failed: {e}")
         raise HTTPException(status_code=422, detail="Could not decode image. Please ensure you are uploading a valid image file.")
 
