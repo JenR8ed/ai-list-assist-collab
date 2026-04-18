@@ -32,6 +32,12 @@ async def cmd_start(message: Message):
     )
 
 
+def _process_image_sync(file_bytes_io: io.BytesIO) -> Image.Image:
+    """CPU-bound image decoding and conversion."""
+    file_bytes_io.seek(0)
+    return Image.open(file_bytes_io).convert("RGB")
+
+
 @dp.message(F.photo)
 async def handle_photo(message: Message):
     await message.answer("🔍 Analyzing your image... hang tight!")
@@ -40,7 +46,7 @@ async def handle_photo(message: Message):
     file = await bot.get_file(photo.file_id)
     file_bytes = await bot.download_file(file.file_path)
 
-    img = Image.open(io.BytesIO(file_bytes.read())).convert("RGB")
+    img = await asyncio.to_thread(_process_image_sync, file_bytes)
     prompt = message.caption or None
 
     try:
