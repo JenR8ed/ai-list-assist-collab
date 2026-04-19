@@ -1,15 +1,5 @@
-import pytest
 from unittest.mock import AsyncMock, patch
-from fastapi.testclient import TestClient
-
-from app.main import app
 from app.schemas.listing import ImageAnalysisResult, ListingDraft
-
-@pytest.fixture
-def client():
-    """Fixture for FastAPI TestClient with lifespan support."""
-    with TestClient(app) as c:
-        yield c
 
 MOCK_ANALYSIS = ImageAnalysisResult(
     title="Vintage BB Gun",

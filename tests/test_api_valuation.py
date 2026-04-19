@@ -1,15 +1,5 @@
-import pytest
 from unittest.mock import AsyncMock, patch
-from fastapi.testclient import TestClient
-
-from app.main import app
 from app.schemas.listing import ValuationResult
-
-@pytest.fixture
-def client():
-    """Fixture for FastAPI TestClient with lifespan support."""
-    with TestClient(app) as c:
-        yield c
 
 def test_estimate_price_endpoint_success(client):
     """Verify happy path for valuation endpoint using TestClient."""
