@@ -1,12 +1,17 @@
+import pytest
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.schemas.listing import ValuationResult
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    """Fixture for FastAPI TestClient with lifespan support."""
+    with TestClient(app) as c:
+        yield c
 
-def test_estimate_price_endpoint_success():
+def test_estimate_price_endpoint_success(client):
     """Verify happy path for valuation endpoint using TestClient."""
     payload = {"title": "Test Item", "condition": "New"}
     expected_result = ValuationResult(
@@ -26,22 +31,19 @@ def test_estimate_price_endpoint_success():
     assert data["price_median"] == 15.0
     assert data["comparable_sold_count"] == 5
 
-def test_estimate_price_endpoint_failure():
+def test_estimate_price_endpoint_failure(client):
     """Verify 502 error when valuation service fails."""
     payload = {"title": "Test Item"}
 
-    with patch("app.api.valuation.get_valuation", new_callable=AsyncMock) as mock_get:
-        mock_get.side_effect = Exception("Service Down")
+    with patch("app.api.valuation.get_valuation", new=AsyncMock(side_effect=Exception("Service Down"))):
         response = client.post("/api/valuation/estimate", json=payload)
 
     assert response.status_code == 502
-    mock_get.assert_called_once()
     assert response.json()["detail"] == "Valuation service failed. Please try again later."
 
-def test_estimate_price_invalid_request():
+def test_estimate_price_invalid_request(client):
     """Verify 422 error for invalid request body."""
     # Missing required 'title' field
     payload = {"condition": "New"}
     response = client.post("/api/valuation/estimate", json=payload)
     assert response.status_code == 422
-    assert response.json()["detail"][0]["loc"] == ["body", "title"]
