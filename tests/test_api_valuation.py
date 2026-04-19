@@ -44,3 +44,4 @@ def test_estimate_price_invalid_request():
     payload = {"condition": "New"}
     response = client.post("/api/valuation/estimate", json=payload)
     assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "title"]
