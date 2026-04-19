@@ -30,10 +30,12 @@ def test_estimate_price_endpoint_failure():
     """Verify 502 error when valuation service fails."""
     payload = {"title": "Test Item"}
 
-    with patch("app.api.valuation.get_valuation", new=AsyncMock(side_effect=Exception("Service Down"))):
+    with patch("app.api.valuation.get_valuation", new_callable=AsyncMock) as mock_get:
+        mock_get.side_effect = Exception("Service Down")
         response = client.post("/api/valuation/estimate", json=payload)
 
     assert response.status_code == 502
+    mock_get.assert_called_once()
     assert response.json()["detail"] == "Valuation service failed. Please try again later."
 
 def test_estimate_price_invalid_request():
