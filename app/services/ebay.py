@@ -1,4 +1,5 @@
 """eBay API service — listing drafts and price valuation via sold comps."""
+import asyncio
 import statistics
 
 from loguru import logger
@@ -24,7 +25,8 @@ async def get_valuation(request: ValuationRequest) -> ValuationResult:
     if request.keywords:
         query += " " + " ".join(request.keywords[:3])
 
-    response = api.execute(
+    response = await asyncio.to_thread(
+        api.execute,
         "findCompletedItems",
         {
             "keywords": query,
