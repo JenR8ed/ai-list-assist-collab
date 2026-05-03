@@ -46,14 +46,10 @@ def _get_gemini_model() -> Any:
     return genai.GenerativeModel("gemini-1.5-flash")
 
 
-async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
+async def _analyze_with_gemini(img: Image.Image, full_prompt: str) -> ImageAnalysisResult:
     from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
     model = _get_gemini_model()
-
-    full_prompt = LISTING_PROMPT
-    if prompt:
-        full_prompt += f"\nExtra context from seller: {prompt}"
 
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
@@ -72,13 +68,10 @@ async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> Image
     return ImageAnalysisResult(**data)
 
 
-async def _analyze_with_ollama(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
+async def _analyze_with_ollama(img: Image.Image, full_prompt: str) -> ImageAnalysisResult:
     import httpx
 
     b64 = _pil_to_base64(img)
-    full_prompt = LISTING_PROMPT
-    if prompt:
-        full_prompt += f"\nExtra context from seller: {prompt}"
 
     async with httpx.AsyncClient(timeout=120) as client:
         resp = await client.post(
@@ -100,12 +93,16 @@ async def _analyze_with_ollama(img: Image.Image, prompt: Optional[str]) -> Image
 
 async def analyze_image(img: Image.Image, prompt: Optional[str] = None) -> ImageAnalysisResult:
     """Try Gemini first; fall back to local Ollama LLaVA if unavailable."""
+    full_prompt = LISTING_PROMPT
+    if prompt:
+        full_prompt += f"\nExtra context from seller: {prompt}"
+
     if settings.google_api_key:
         try:
             logger.info("Vision: using Gemini 1.5 Flash")
-            return await _analyze_with_gemini(img, prompt)
+            return await _analyze_with_gemini(img, full_prompt)
         except Exception as e:
             logger.warning(f"Gemini failed ({e}), falling back to Ollama")
 
     logger.info(f"Vision: using Ollama ({settings.ollama_model})")
-    return await _analyze_with_ollama(img, prompt)
+    return await _analyze_with_ollama(img, full_prompt)
