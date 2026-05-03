@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     # App
     secret_key: str = "changeme"
-    debug: bool = True
+    debug: bool = False
     log_level: str = "info"
     allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
