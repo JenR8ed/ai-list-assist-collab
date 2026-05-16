@@ -1,5 +1,7 @@
 """Application settings loaded from environment / .env file."""
+import secrets
 from typing import List
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,8 +33,20 @@ class Settings(BaseSettings):
     ollama_model: str = "llava:7b"
 
     # App
-    secret_key: str = "changeme"
-    debug: bool = False
+    secret_key: str = Field(default_factory=lambda: secrets.token_hex(32))
+          debug: bool = False
+
+    @field_validator("secret_key")
+    @classmethod
+    def secret_key_must_be_secure(cls, v: str) -> str:
+        if v == "changeme":
+            raise ValueError(
+                "Insecure SECRET_KEY detected. Please set a secure SECRET_KEY "
+                "in your environment or .env file."
+            )
+        return v
+
+    debug: bool = True
     log_level: str = "info"
     allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
