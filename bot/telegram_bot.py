@@ -1,6 +1,7 @@
 """AI List Assist — Telegram bot (aiogram v3).
 Send a product photo → receive a full eBay listing draft.
 """
+
 import asyncio
 import io
 import sys
@@ -39,8 +40,12 @@ async def handle_photo(message: Message):
     photo: PhotoSize = message.photo[-1]  # largest resolution
     file = await bot.get_file(photo.file_id)
     file_bytes = await bot.download_file(file.file_path)
+    file_data = file_bytes.read()
 
-    img = Image.open(io.BytesIO(file_bytes.read())).convert("RGB")
+    def _load_img(data):
+        return Image.open(io.BytesIO(data)).convert("RGB")
+
+    img = await asyncio.to_thread(_load_img, file_data)
     prompt = message.caption or None
 
     try:
