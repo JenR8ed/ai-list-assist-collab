@@ -1,5 +1,5 @@
-🎯 **What:** The vulnerability fixed was debug mode being enabled by default in the application configuration.
+🎯 **What:** The CORS `allowed_origins` policy was previously hardcoded to localhost origins (`["http://localhost:3000", "http://localhost:8000"]`). Additionally, there was a duplicate `debug: bool = True` field that mistakenly overrode the intended secure default (`debug: bool = False`).
 
-⚠️ **Risk:** If left unfixed, debug mode being enabled could accidentally expose sensitive information, source code details, or detailed error traces in a production environment, leading to potential exploitation or data leakage.
+⚠️ **Risk:** Hardcoded local origins prevent the application from being used by production frontend clients since cross-origin requests would be blocked. This often leads developers to modify the code manually or deploy insecure overly permissive wildcard origins out of frustration. The duplicate `debug` flag being implicitly `True` exposed sensitive internal stack traces in production error responses.
 
-🛡️ **Solution:** The default value for `debug` in `app/core/config.py` was changed to `False`. A unit test was also added in `tests/test_config.py` to ensure this secure default persists.
+🛡️ **Solution:** Implemented a Pydantic `field_validator` with `mode="before"` to dynamically parse the `ALLOWED_ORIGINS` environment variable. The validator safely attempts to decode valid JSON arrays (e.g. `["https://example.com"]`) and smoothly falls back to parsing comma-separated strings (e.g. `https://example.com,https://app.com`). The duplicate `debug` flag override was removed, ensuring debug defaults to `False`. The test suite was updated and validated to ensure backwards compatibility with standard instantiation.

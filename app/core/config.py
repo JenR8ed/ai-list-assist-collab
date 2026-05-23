@@ -1,6 +1,7 @@
 """Application settings loaded from environment / .env file."""
 import secrets
-from typing import List
+import json
+from typing import List, Any
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -34,7 +35,8 @@ class Settings(BaseSettings):
 
     # App
     secret_key: str = Field(default_factory=lambda: secrets.token_hex(32))
-          debug: bool = False
+    debug: bool = False
+    log_level: str = "info"
 
     @field_validator("secret_key")
     @classmethod
@@ -46,9 +48,20 @@ class Settings(BaseSettings):
             )
         return v
 
-    debug: bool = True
-    log_level: str = "info"
     allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
 
 settings = Settings()
