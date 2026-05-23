@@ -8,6 +8,7 @@ import io
 from typing import Optional, Any
 from functools import lru_cache
 
+import httpx
 from PIL import Image
 from loguru import logger
 
@@ -73,8 +74,6 @@ async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> Image
 
 
 async def _analyze_with_ollama(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
-    import httpx
-
     b64 = _pil_to_base64(img)
     full_prompt = LISTING_PROMPT
     if prompt:
