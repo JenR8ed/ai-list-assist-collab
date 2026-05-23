@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     # App
     secret_key: str = Field(default_factory=lambda: secrets.token_hex(32))
-          debug: bool = False
+
 
     @field_validator("secret_key")
     @classmethod
