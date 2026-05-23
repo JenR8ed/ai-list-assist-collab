@@ -1,8 +1,11 @@
 import pytest
 import secrets
 from pydantic import ValidationError
+import os
+from unittest.mock import patch
 from app.core.config import Settings
 
+@patch.dict(os.environ, {}, clear=True)
 def test_secret_key_default_is_random():
     """Verify that a random secret key is generated if not provided."""
     settings1 = Settings(_env_file=None)

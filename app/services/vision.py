@@ -5,6 +5,7 @@ Fallback: Ollama LLaVA (local, offline)
 import json
 import base64
 import io
+import asyncio
 from typing import Optional, Any
 from functools import lru_cache
 
@@ -57,7 +58,9 @@ async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> Image
         full_prompt += f"\nExtra context from seller: {prompt}"
 
     buf = io.BytesIO()
-    img.save(buf, format="JPEG")
+    def _save():
+        img.save(buf, format="JPEG")
+    await asyncio.to_thread(_save)
     image_data = {"mime_type": "image/jpeg", "data": buf.getvalue()}
 
     response = await model.generate_content_async(
@@ -74,7 +77,7 @@ async def _analyze_with_gemini(img: Image.Image, prompt: Optional[str]) -> Image
 
 
 async def _analyze_with_ollama(img: Image.Image, prompt: Optional[str]) -> ImageAnalysisResult:
-    b64 = _pil_to_base64(img)
+    b64 = await asyncio.to_thread(_pil_to_base64, img)
     full_prompt = LISTING_PROMPT
     if prompt:
         full_prompt += f"\nExtra context from seller: {prompt}"
