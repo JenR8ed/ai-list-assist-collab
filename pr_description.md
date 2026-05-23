@@ -1,5 +1,10 @@
-🎯 **What:** The vulnerability fixed was debug mode being enabled by default in the application configuration.
+🔒 Fix hardcoded CORS allowed origins
 
-⚠️ **Risk:** If left unfixed, debug mode being enabled could accidentally expose sensitive information, source code details, or detailed error traces in a production environment, leading to potential exploitation or data leakage.
+🎯 **What:** The vulnerability fixed
+The CORS allowed_origins setting was hardcoded to only allow localhost ports 3000 and 8000, which made it impossible to configure the allowed CORS origins securely via environment variables for production deployments.
 
-🛡️ **Solution:** The default value for `debug` in `app/core/config.py` was changed to `False`. A unit test was also added in `tests/test_config.py` to ensure this secure default persists.
+⚠️ **Risk:** The potential impact if left unfixed
+If left unfixed, deploying this application to a production environment would require either maintaining a fork of the codebase or running with overly permissive or incorrectly configured CORS. If an administrator is forced to fork or manually patch the code to enable a frontend domain, they might inadvertently leave it open to Cross-Origin Resource Sharing (CORS) attacks if misconfigured.
+
+🛡️ **Solution:** How the fix addresses the vulnerability
+Updated the `allowed_origins` in `app/core/config.py` to allow specifying the list of allowed origins via the `ALLOWED_ORIGINS` environment variable. A `field_validator` parses a comma-separated string, making it easy to deploy the app with correct CORS settings through an environment variable.
