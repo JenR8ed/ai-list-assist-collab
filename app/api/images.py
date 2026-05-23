@@ -1,4 +1,5 @@
 """Image upload and multimodal AI analysis endpoints."""
+import asyncio
 import io
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
@@ -6,6 +7,10 @@ from loguru import logger
 
 from app.schemas.listing import ImageAnalysisResult
 from app.services.vision import analyze_image
+
+def _decode_image(contents: bytes) -> Image.Image:
+    """Synchronous helper to decode image data."""
+    return Image.open(io.BytesIO(contents)).convert("RGB")
 
 router = APIRouter()
 
@@ -27,7 +32,7 @@ async def analyze_listing_image(
         raise HTTPException(status_code=413, detail=f"Image exceeds {MAX_SIZE_MB}MB limit")
 
     try:
-        img = Image.open(io.BytesIO(contents)).convert("RGB")
+        img = await asyncio.to_thread(_decode_image, contents)
     except (UnidentifiedImageError, OSError) as e:
         logger.error(f"Image decoding failed: {e}")
         raise HTTPException(status_code=422, detail="Could not decode image. Please ensure you are uploading a valid image file.")
