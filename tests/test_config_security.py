@@ -3,10 +3,14 @@ import secrets
 from pydantic import ValidationError
 from app.core.config import Settings
 
+import os
+from unittest.mock import patch
+
 def test_secret_key_default_is_random():
     """Verify that a random secret key is generated if not provided."""
-    settings1 = Settings(_env_file=None)
-    settings2 = Settings(_env_file=None)
+    with patch.dict(os.environ, {}, clear=True):
+        settings1 = Settings(_env_file=None)
+        settings2 = Settings(_env_file=None)
 
     assert settings1.secret_key is not None
     assert len(settings1.secret_key) == 64  # hex string from 32 bytes
