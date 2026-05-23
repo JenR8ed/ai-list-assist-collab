@@ -34,7 +34,6 @@ class Settings(BaseSettings):
 
     # App
     secret_key: str = Field(default_factory=lambda: secrets.token_hex(32))
-          debug: bool = False
 
     @field_validator("secret_key")
     @classmethod
@@ -46,7 +45,7 @@ class Settings(BaseSettings):
             )
         return v
 
-    debug: bool = True
+    debug: bool = False
     log_level: str = "info"
     allowed_origins: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
