@@ -1,14 +1,15 @@
 """Telegram bot service utilities shared with aiogram handlers."""
 from loguru import logger
+import re
+
+_ESCAPE_MD_RE = re.compile(r'([_*`\[\]])')
 
 
 def escape_markdown(text: str) -> str:
-    """Escape Markdown reserved characters: _, *, `, ["""
+    """Escape Markdown reserved characters: _, *, `, [, ]"""
     if not text:
         return ""
-    for char in ["_", "*", "`", "["]:
-        text = text.replace(char, f"\\{char}")
-    return text
+    return _ESCAPE_MD_RE.sub(r'\\\1', text)
 
 
 async def send_listing_summary(bot, chat_id: int, analysis) -> None:
